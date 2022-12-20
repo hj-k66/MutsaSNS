@@ -10,4 +10,8 @@ public class SwaggerTestController {
     public String hello(){
         return "hello";
     }
+    @GetMapping("/api/v1/bye")
+    public String bye(){
+        return "bye";
+    }
 }
