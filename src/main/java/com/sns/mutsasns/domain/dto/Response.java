@@ -15,7 +15,7 @@ public class Response<T> {
         return new Response<>("SUCCESS",result);
     }
 
-    public static Response<ErrorResult> error(ErrorResult errorResult){
-        return new Response<>("ERROR",errorResult);
+    public static <T> Response<T> error(T result){
+        return new Response<>("ERROR",result);
     }
 }
