@@ -3,7 +3,6 @@ package com.sns.mutsasns.controller;
 import com.sns.mutsasns.domain.dto.*;
 import com.sns.mutsasns.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +21,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest userLoginRequest){
+    public Response<UserLoginResponse> login(@RequestBody UserLoginRequest userLoginRequest){
         String token = userService.login(userLoginRequest);
-        return ResponseEntity.ok().body(new UserLoginResponse(token));
+        return Response.success(new UserLoginResponse(token));
     }
 }
