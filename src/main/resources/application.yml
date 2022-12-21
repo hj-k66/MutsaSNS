@@ -16,3 +16,6 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     database: mysql
     hibernate.ddl-auto: validate
+jwt:
+  token:
+    secret: temp
