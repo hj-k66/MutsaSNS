@@ -1,9 +1,19 @@
 package com.sns.mutsasns.domain.entity;
 
+import com.sns.mutsasns.domain.dto.UserDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
 public class User {
 
     @Id
@@ -19,4 +29,11 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    public UserDto toDto(){
+        return UserDto.builder()
+                .id(this.id)
+                .userName(this.userName)
+                .build();
+    }
 }
