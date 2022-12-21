@@ -23,6 +23,11 @@ public class UserService {
     private String secretKey;
     private long expireTimeMs = 1000 * 60 * 60; //1시간
 
+    public User getUserByUserName(String userName){
+        return userRepository.findByUserName(userName)
+                .orElseThrow(()->new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+    }
+
     public UserDto join(UserJoinRequest userJoinRequest){
         //예외 : userName 중복
         userRepository.findByUserName(userJoinRequest.getUserName())
