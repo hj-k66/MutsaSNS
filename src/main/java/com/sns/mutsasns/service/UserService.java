@@ -49,6 +49,6 @@ public class UserService {
         if(!encoder.matches(userLoginRequest.getPassword(),user.getPassword())){
             throw new SNSException(ErrorCode.INVALID_PASSWORD);
         }
-        return JwtTokenUtil.createToken(userName,secretKey,expireTimeMs);
+        return JwtTokenUtil.createToken(user.getId(),secretKey,expireTimeMs);
     }
 }
