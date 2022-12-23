@@ -1,8 +1,8 @@
 package com.sns.mutsasns.service;
 
-import com.sns.mutsasns.domain.dto.UserDto;
-import com.sns.mutsasns.domain.dto.UserJoinRequest;
-import com.sns.mutsasns.domain.dto.UserLoginRequest;
+import com.sns.mutsasns.domain.dto.user.UserDto;
+import com.sns.mutsasns.domain.dto.user.UserJoinRequest;
+import com.sns.mutsasns.domain.dto.user.UserLoginRequest;
 import com.sns.mutsasns.domain.entity.User;
 import com.sns.mutsasns.exception.ErrorCode;
 import com.sns.mutsasns.exception.SNSException;

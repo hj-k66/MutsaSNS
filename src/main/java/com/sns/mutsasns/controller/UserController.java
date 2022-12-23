@@ -1,6 +1,7 @@
 package com.sns.mutsasns.controller;
 
 import com.sns.mutsasns.domain.dto.*;
+import com.sns.mutsasns.domain.dto.user.*;
 import com.sns.mutsasns.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

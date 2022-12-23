@@ -1,4 +1,4 @@
-package com.sns.mutsasns.domain.dto;
+package com.sns.mutsasns.domain.dto.user;
 
 import com.sns.mutsasns.domain.entity.User;
 import com.sns.mutsasns.domain.entity.UserRole;

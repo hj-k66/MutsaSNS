@@ -1,6 +1,6 @@
 package com.sns.mutsasns.domain.entity;
 
-import com.sns.mutsasns.domain.dto.UserDto;
+import com.sns.mutsasns.domain.dto.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
