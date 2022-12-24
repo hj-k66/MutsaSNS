@@ -19,7 +19,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
 
-    @Value("temp")
+    @Value("${jwt.token.secret}")
     private String secretKey;
     private long expireTimeMs = 1000 * 60 * 60; //1시간
 
@@ -49,6 +49,6 @@ public class UserService {
         if(!encoder.matches(userLoginRequest.getPassword(),user.getPassword())){
             throw new SNSException(ErrorCode.INVALID_PASSWORD);
         }
-        return JwtTokenUtil.createToken(user.getId(),secretKey,expireTimeMs);
+        return JwtTokenUtil.createToken(user.getUserName(),secretKey,expireTimeMs);
     }
 }
