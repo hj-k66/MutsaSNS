@@ -8,6 +8,11 @@ import com.sns.mutsasns.domain.dto.posts.PostResponse;
 import com.sns.mutsasns.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +44,15 @@ public class PostController {
                 .updatedAt(onePost.getUpdatedAt())
                 .build();
         return Response.success(postResponse);
+
+    }
+
+    @GetMapping("")
+    public Response<Page<PostResponse>> getPostList(@PageableDefault(size = 20)
+                                              @SortDefault(sort = "createdAt",direction = Sort.Direction.DESC) Pageable pageable){
+        Page<PostDto> allPostsDto = postService.getAllPosts(pageable);
+        Page<PostResponse> allpostResponses = allPostsDto.map(PostDto::toResponse);
+        return Response.success(allpostResponses);
 
     }
 

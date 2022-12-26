@@ -9,6 +9,8 @@ import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -37,14 +39,11 @@ public class PostService {
     public PostDto getOnePost(Long id){
         Post post = postRepository.findById(id)
                 .orElseThrow(()-> new SNSException(ErrorCode.POST_NOT_FOUND));
-        return PostDto.builder()
-                .postId(post.getId())
-                .title(post.getTitle())
-                .body(post.getBody())
-                .userName(post.getUser().getUserName())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
+        return post.toDto();
     }
 
+    public Page<PostDto> getAllPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        return posts.map(Post::toDto);
+    }
 }

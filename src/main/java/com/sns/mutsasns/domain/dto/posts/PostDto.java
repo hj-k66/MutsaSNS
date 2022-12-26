@@ -19,4 +19,15 @@ public class PostDto {
     private String userName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public PostResponse toResponse(){
+        return PostResponse.builder()
+                .id(this.postId)
+                .title(this.title)
+                .body(this.body)
+                .userName(this.userName)
+                .createdAt(this.createdAt)
+                .updatedAt(this.updatedAt)
+                .build();
+    }
 }
