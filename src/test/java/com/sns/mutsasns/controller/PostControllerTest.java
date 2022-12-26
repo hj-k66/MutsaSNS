@@ -15,11 +15,14 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,4 +71,32 @@ class PostControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    @DisplayName("포스트 상세 조회 성공")
+    @WithMockUser
+    void getOnePost_success() throws Exception {
+        PostDto postDto = PostDto.builder()
+                .postId(1L)
+                .title("제목목")
+                .body("내요용")
+                .userName("heejung")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(postService.getOnePost(any())).thenReturn(postDto);
+
+        mockMvc.perform(get("/api/v1/posts/1")
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").exists())
+                .andExpect(jsonPath("$.result.id").exists())
+                .andExpect(jsonPath("$.result.title").exists())
+                .andExpect(jsonPath("$.result.body").exists())
+                .andExpect(jsonPath("$.result.userName").exists())
+                .andExpect(jsonPath("$.result.createdAt").exists())
+                .andExpect(jsonPath("$.result.updatedAt").exists());
+
+    }
 }
