@@ -9,7 +9,10 @@ import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +30,20 @@ public class PostService {
                 .build();
         Post savedPost = postRepository.save(post);
 
-        return new PostDto("포스트 등록 완료",savedPost.getId());
-
+        return PostDto.builder()
+                .message("포스트 등록 완료")
+                .postId(savedPost.getId())
+                .build();
     }
 
+    public PostDto getOnePost(Long id){
+        Post post = postRepository.findById(id)
+                .orElseThrow(()-> new SNSException(ErrorCode.POST_NOT_FOUND));
+        return post.toDto();
+    }
+
+    public Page<PostDto> getAllPosts(Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        return posts.map(Post::toDto);
+    }
 }

@@ -1,10 +1,12 @@
 package com.sns.mutsasns.service;
 
 import com.sns.mutsasns.domain.dto.posts.PostCreateRequest;
+import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.domain.entity.Post;
 import com.sns.mutsasns.domain.entity.User;
 import com.sns.mutsasns.exception.ErrorCode;
 import com.sns.mutsasns.exception.SNSException;
+import com.sns.mutsasns.fixture.PostFixture;
 import com.sns.mutsasns.fixture.TestInfoFixture;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
@@ -57,12 +59,26 @@ class PostServiceTest {
         when(postRepository.save(any())).thenReturn(mock(Post.class));
 
         PostCreateRequest postCreateRequest = new PostCreateRequest(fixture.getTitle(),fixture.getBody());
-
-
         SNSException exception = Assertions.assertThrows(SNSException.class, () -> postService.create(postCreateRequest, fixture.getUserName()));
 
         assertEquals(ErrorCode.USERNAME_NOT_FOUND, exception.getErrorCode());
 
+    }
+
+    @Test
+    @DisplayName("포스트 상세 조회 성공")
+    void get_one_post_success(){
+        TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+        User user = User.builder()
+                .userName(fixture.getUserName())
+                .build();
+        Post post = PostFixture.get(fixture.getUserName(),"asdf");
+
+        when(postRepository.findById(fixture.getPostId()))
+                .thenReturn(Optional.of(post));
+        PostDto postDto = postService.getOnePost(fixture.getPostId());
+
+        Assertions.assertEquals(postDto.getUserName(),fixture.getUserName());
     }
 
 }
