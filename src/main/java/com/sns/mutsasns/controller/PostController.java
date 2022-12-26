@@ -3,6 +3,7 @@ package com.sns.mutsasns.controller;
 import com.sns.mutsasns.domain.dto.Response;
 import com.sns.mutsasns.domain.dto.posts.PostCreateRequest;
 import com.sns.mutsasns.domain.dto.posts.PostCreateResponse;
+import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +25,8 @@ public class PostController {
     public Response<PostCreateResponse> createPost(@RequestBody PostCreateRequest postCreateRequest, Authentication authentication){
         log.info("isAuthenticated:{},name:{},principle:{},authorities:{}",
                 authentication.isAuthenticated(), authentication.getName(), authentication.getPrincipal().toString(),authentication.getAuthorities().toString());
-        PostCreateResponse postCreateResponse = postService.create(postCreateRequest, authentication.getName());
-        return Response.success(postCreateResponse);
+        PostDto postDto = postService.create(postCreateRequest, authentication.getName());
+        return Response.success(new PostCreateResponse(postDto.getMessage(),postDto.getPostId()));
     }
 
 

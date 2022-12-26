@@ -1,7 +1,7 @@
 package com.sns.mutsasns.service;
 
 import com.sns.mutsasns.domain.dto.posts.PostCreateRequest;
-import com.sns.mutsasns.domain.dto.posts.PostCreateResponse;
+import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.domain.entity.Post;
 import com.sns.mutsasns.domain.entity.User;
 import com.sns.mutsasns.exception.ErrorCode;
@@ -17,7 +17,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    public PostCreateResponse create(PostCreateRequest request, String userName){
+    public PostDto create(PostCreateRequest request, String userName){
         User user = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
         Post post = Post.builder()
@@ -27,7 +27,8 @@ public class PostService {
                 .build();
         Post savedPost = postRepository.save(post);
 
-        return new PostCreateResponse("포스트 등록 완료",savedPost.getId());
+        return new PostDto("포스트 등록 완료",savedPost.getId());
+
     }
 
 }
