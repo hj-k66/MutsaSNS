@@ -11,6 +11,7 @@ import com.sns.mutsasns.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -31,8 +32,19 @@ public class PostService {
                 .message("포스트 등록 완료")
                 .postId(savedPost.getId())
                 .build();
-
     }
 
+    public PostDto getOnePost(Long id){
+        Post post = postRepository.findById(id)
+                .orElseThrow(()-> new SNSException(ErrorCode.POST_NOT_FOUND));
+        return PostDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .body(post.getBody())
+                .userName(post.getUser().getUserName())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
+                .build();
+    }
 
 }
