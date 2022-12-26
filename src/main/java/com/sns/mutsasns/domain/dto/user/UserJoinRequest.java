@@ -1,4 +1,4 @@
-package com.sns.mutsasns.domain.dto;
+package com.sns.mutsasns.domain.dto.user;
 
 import com.sns.mutsasns.domain.entity.User;
 import com.sns.mutsasns.domain.entity.UserRole;
@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
@@ -21,7 +20,6 @@ public class UserJoinRequest {
                 .userName(this.userName)
                 .password(password)
                 .role(UserRole.USER) //default = USER
-                .registeredAt(LocalDate.now())
                 .build();
 
     }

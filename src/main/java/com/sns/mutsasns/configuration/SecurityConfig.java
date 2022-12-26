@@ -29,6 +29,10 @@ public class SecurityConfig {
                 .antMatchers("/api/v1/users/join", "/api/v1/users/login").permitAll() // join, login 허용
                 .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated()
                 .and()
+                .exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHadler())
+                .and()
+                .exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // jwt사용하는 경우 씀
                 .and()

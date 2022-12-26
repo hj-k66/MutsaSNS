@@ -1,15 +1,13 @@
-package com.sns.mutsasns.domain.dto;
+package com.sns.mutsasns.domain.dto.user;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Getter
-public class UserDto {
-    private Long id;
+public class UserLoginRequest {
     private String userName;
+    private String password;
 }

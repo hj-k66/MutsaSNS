@@ -1,8 +1,8 @@
 package com.sns.mutsasns.service;
 
-import com.sns.mutsasns.domain.dto.UserDto;
-import com.sns.mutsasns.domain.dto.UserJoinRequest;
-import com.sns.mutsasns.domain.dto.UserLoginRequest;
+import com.sns.mutsasns.domain.dto.user.UserDto;
+import com.sns.mutsasns.domain.dto.user.UserJoinRequest;
+import com.sns.mutsasns.domain.dto.user.UserLoginRequest;
 import com.sns.mutsasns.domain.entity.User;
 import com.sns.mutsasns.exception.ErrorCode;
 import com.sns.mutsasns.exception.SNSException;
@@ -19,7 +19,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
 
-    @Value("temp")
+    @Value("${jwt.token.secret}")
     private String secretKey;
     private long expireTimeMs = 1000 * 60 * 60; //1시간
 
@@ -49,6 +49,6 @@ public class UserService {
         if(!encoder.matches(userLoginRequest.getPassword(),user.getPassword())){
             throw new SNSException(ErrorCode.INVALID_PASSWORD);
         }
-        return JwtTokenUtil.createToken(userName,secretKey,expireTimeMs);
+        return JwtTokenUtil.createToken(user.getUserName(),secretKey,expireTimeMs);
     }
 }
