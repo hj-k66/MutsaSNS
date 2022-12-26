@@ -27,8 +27,12 @@ public class PostService {
                 .build();
         Post savedPost = postRepository.save(post);
 
-        return new PostDto("포스트 등록 완료",savedPost.getId());
+        return PostDto.builder()
+                .message("포스트 등록 완료")
+                .postId(savedPost.getId())
+                .build();
 
     }
+
 
 }
