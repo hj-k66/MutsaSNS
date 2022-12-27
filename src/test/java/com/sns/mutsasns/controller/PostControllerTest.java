@@ -2,10 +2,12 @@ package com.sns.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sns.mutsasns.configuration.EncrypterConfig;
-import com.sns.mutsasns.domain.dto.posts.PostCreateRequest;
+import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 
-import com.sns.mutsasns.domain.dto.user.UserDto;
+import com.sns.mutsasns.domain.entity.Post;
+import com.sns.mutsasns.exception.ErrorCode;
+import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.service.PostService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -47,19 +49,94 @@ class PostControllerTest {
     @MockBean
     EncrypterConfig EncrypterConfig;
 
+    @Test
+    @DisplayName("포스트 수정 성공")
+    @WithMockUser
+    void modifyPost_success() throws Exception {
+        PostWriteRequest postWriteRequest = new PostWriteRequest("수정제목", "수정내용");
+
+        Post post = Post.builder()
+                .id(1L)
+                .build();
+
+        when(postService.modify(any(), any(), any()))
+                .thenReturn(PostDto.builder()
+                        .message("포스트 수정 완료")
+                        .postId(post.getId())
+                        .build());
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
+                .andDo(print())
+                .andExpect(jsonPath("$.result.message").exists())
+                .andExpect(jsonPath("$.result.postId").exists())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("포스트 수정 실패 - 인증 실패")
+    @WithAnonymousUser
+    void modifyPost_failed() throws Exception {
+        PostWriteRequest postWriteRequest = new PostWriteRequest("제목제목수정", "내용내용수정");
+
+        //Controller에서는 JWT Filter Exception을 검증x
+//        when(postService.modify(any(),any(),any())).thenThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("포스트 수정 실패 - 작성자 불일치")
+    @WithMockUser
+    void modifyPost_failed_user() throws Exception{
+        PostWriteRequest postWriteRequest = new PostWriteRequest("제목제목수정", "내용내용수정");
+
+        when(postService.modify(any(),any(),any())).thenThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_PERMISSION.getHttpStatus().value()));
+    }
+
+    @Test
+    @DisplayName("포스트 수정 실패 - 데이터베이스 에러")
+    @WithMockUser
+    void modifyPost_failed_db() throws Exception{
+        PostWriteRequest postWriteRequest = new PostWriteRequest("제목제목수정", "내용내용수정");
+
+        when(postService.modify(any(),any(),any())).thenThrow(new SNSException(ErrorCode.DATABASE_ERROR));
+
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.DATABASE_ERROR.getHttpStatus().value()));
+    }
+
 
     @Test
     @DisplayName("포스트 작성 성공")
     @WithMockUser
     void createPost_success() throws Exception {
-        PostCreateRequest postCreateRequest = new PostCreateRequest("제목제목", "내용내용");
+        PostWriteRequest postWriteRequest = new PostWriteRequest("제목제목", "내용내용");
 
         when(postService.create(any(), any())).thenReturn(mock(PostDto.class));
 
         mockMvc.perform(post("/api/v1/posts")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(postCreateRequest)))
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -69,7 +146,7 @@ class PostControllerTest {
     @DisplayName("포스트 작성 실패 - 로그인 하지 않은 경우 ")
     @WithAnonymousUser
     void createPost_failed() throws Exception {
-        PostCreateRequest postCreateRequest = new PostCreateRequest("제목제목", "내용내용");
+        PostWriteRequest postWriteRequest = new PostWriteRequest("제목제목", "내용내용");
 
         //Controller에서는 JWT Filter Exception을 검증x
 //        when(postService.create(any(),any())).thenThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
@@ -77,7 +154,7 @@ class PostControllerTest {
         mockMvc.perform(post("/api/v1/posts")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(postCreateRequest)))
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }

@@ -1,8 +1,8 @@
 package com.sns.mutsasns.controller;
 
 import com.sns.mutsasns.domain.dto.Response;
-import com.sns.mutsasns.domain.dto.posts.PostCreateRequest;
-import com.sns.mutsasns.domain.dto.posts.PostCreateResponse;
+import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
+import com.sns.mutsasns.domain.dto.posts.PostWriteResponse;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.domain.dto.posts.PostResponse;
 import com.sns.mutsasns.service.PostService;
@@ -24,12 +24,18 @@ public class PostController {
 
     private final PostService postService;
 
+    @PutMapping("/{id}")
+    public Response<PostWriteResponse> modifyPost(@PathVariable Long id, @RequestBody PostWriteRequest postWriteRequest, Authentication authentication){
+        PostDto postDto = postService.modify(id, postWriteRequest, authentication.getName());
+        return Response.success(new PostWriteResponse(postDto.getMessage(),postDto.getPostId()));
+    }
+
     @PostMapping("")
-    public Response<PostCreateResponse> createPost(@RequestBody PostCreateRequest postCreateRequest, Authentication authentication){
+    public Response<PostWriteResponse> createPost(@RequestBody PostWriteRequest postWriteRequest, Authentication authentication){
         log.info("isAuthenticated:{},name:{},principle:{},authorities:{}",
                 authentication.isAuthenticated(), authentication.getName(), authentication.getPrincipal().toString(),authentication.getAuthorities().toString());
-        PostDto postDto = postService.create(postCreateRequest, authentication.getName());
-        return Response.success(new PostCreateResponse(postDto.getMessage(),postDto.getPostId()));
+        PostDto postDto = postService.create(postWriteRequest, authentication.getName());
+        return Response.success(new PostWriteResponse(postDto.getMessage(),postDto.getPostId()));
     }
 
     @GetMapping("/{id}")
@@ -55,6 +61,8 @@ public class PostController {
         return Response.success(allpostResponses);
 
     }
+
+
 
 
 }
