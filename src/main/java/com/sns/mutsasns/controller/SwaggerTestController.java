@@ -8,7 +8,7 @@ public class SwaggerTestController {
 
     @GetMapping("/api/v1/hello")
     public String hello(){
-        return "popin";
+        return "김희정";
     }
     @GetMapping("/api/v1/bye")
     public String bye(){
