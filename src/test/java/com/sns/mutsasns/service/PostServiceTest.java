@@ -1,6 +1,6 @@
 package com.sns.mutsasns.service;
 
-import com.sns.mutsasns.domain.dto.posts.PostCreateRequest;
+import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.domain.entity.Post;
 import com.sns.mutsasns.domain.entity.User;
@@ -45,8 +45,8 @@ class PostServiceTest {
                 .thenReturn(Optional.of(mockUserEntity));
         when(postRepository.save(any()))
                 .thenReturn(mockPostEntity);
-        PostCreateRequest postCreateRequest = new PostCreateRequest(fixture.getTitle(),fixture.getBody());
-        Assertions.assertDoesNotThrow(() -> postService.create(postCreateRequest, fixture.getUserName()));
+        PostWriteRequest postWriteRequest = new PostWriteRequest(fixture.getTitle(),fixture.getBody());
+        Assertions.assertDoesNotThrow(() -> postService.create(postWriteRequest, fixture.getUserName()));
     }
 
     @Test
@@ -58,8 +58,8 @@ class PostServiceTest {
                 .thenReturn(Optional.empty());
         when(postRepository.save(any())).thenReturn(mock(Post.class));
 
-        PostCreateRequest postCreateRequest = new PostCreateRequest(fixture.getTitle(),fixture.getBody());
-        SNSException exception = Assertions.assertThrows(SNSException.class, () -> postService.create(postCreateRequest, fixture.getUserName()));
+        PostWriteRequest postWriteRequest = new PostWriteRequest(fixture.getTitle(),fixture.getBody());
+        SNSException exception = Assertions.assertThrows(SNSException.class, () -> postService.create(postWriteRequest, fixture.getUserName()));
 
         assertEquals(ErrorCode.USERNAME_NOT_FOUND, exception.getErrorCode());
 

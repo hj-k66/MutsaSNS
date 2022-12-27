@@ -2,10 +2,9 @@ package com.sns.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sns.mutsasns.configuration.EncrypterConfig;
-import com.sns.mutsasns.domain.dto.posts.PostCreateRequest;
+import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 
-import com.sns.mutsasns.domain.dto.user.UserDto;
 import com.sns.mutsasns.service.PostService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -52,14 +51,14 @@ class PostControllerTest {
     @DisplayName("포스트 작성 성공")
     @WithMockUser
     void createPost_success() throws Exception {
-        PostCreateRequest postCreateRequest = new PostCreateRequest("제목제목", "내용내용");
+        PostWriteRequest postWriteRequest = new PostWriteRequest("제목제목", "내용내용");
 
         when(postService.create(any(), any())).thenReturn(mock(PostDto.class));
 
         mockMvc.perform(post("/api/v1/posts")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(postCreateRequest)))
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -69,7 +68,7 @@ class PostControllerTest {
     @DisplayName("포스트 작성 실패 - 로그인 하지 않은 경우 ")
     @WithAnonymousUser
     void createPost_failed() throws Exception {
-        PostCreateRequest postCreateRequest = new PostCreateRequest("제목제목", "내용내용");
+        PostWriteRequest postWriteRequest = new PostWriteRequest("제목제목", "내용내용");
 
         //Controller에서는 JWT Filter Exception을 검증x
 //        when(postService.create(any(),any())).thenThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
@@ -77,7 +76,7 @@ class PostControllerTest {
         mockMvc.perform(post("/api/v1/posts")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(postCreateRequest)))
+                        .content(objectMapper.writeValueAsBytes(postWriteRequest)))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
