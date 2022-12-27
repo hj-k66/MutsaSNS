@@ -49,9 +49,9 @@ public class PostService {
         return posts.map(Post::toDto);
     }
 
-    public PostDto modify(Long id, PostWriteRequest postWriteRequest, String userName) {
+    public PostDto modify(Long postId, PostWriteRequest postWriteRequest, String userName) {
         //포스트 존재 x
-        Post post = postRepository.findById(id)
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new SNSException(ErrorCode.POST_NOT_FOUND));
         //유저 존재 x
         User user = userRepository.findByUserName(userName)
