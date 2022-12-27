@@ -24,6 +24,12 @@ public class PostController {
 
     private final PostService postService;
 
+    @DeleteMapping("/{id}")
+    public Response<PostWriteResponse> deletePost(@PathVariable Long id, Authentication authentication){
+        PostDto postDto = postService.delete(id, authentication.getName());
+        return Response.success(new PostWriteResponse(postDto.getMessage(),postDto.getPostId()));
+    }
+
     @PutMapping("/{id}")
     public Response<PostWriteResponse> modifyPost(@PathVariable Long id, @RequestBody PostWriteRequest postWriteRequest, Authentication authentication){
         PostDto postDto = postService.modify(id, postWriteRequest, authentication.getName());
