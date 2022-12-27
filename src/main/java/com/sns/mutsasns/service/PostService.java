@@ -70,4 +70,23 @@ public class PostService {
                 .postId(savedPost.getId())
                 .build();
     }
+
+    public PostDto delete(Long postId, String userName) {
+        //포스트 존재 x
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new SNSException(ErrorCode.POST_NOT_FOUND));
+        //유저 존재 x
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+        //포스트 작성자 != 삭제하려는 유저
+        if(!Objects.equals(post.getUser().getId(), user.getId())){
+            throw new SNSException(ErrorCode.INVALID_PERMISSION);
+        }
+
+        postRepository.delete(post);
+        return PostDto.builder()
+                .message("포스트 삭제 완료")
+                .postId(post.getId())
+                .build();
+    }
 }

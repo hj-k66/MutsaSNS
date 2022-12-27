@@ -37,6 +37,32 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("삭제 실패 - 포스트 존재 x")
+    void delete_failed_post_not_found() {
+        TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+
+        when(postRepository.findById(fixture.getPostId())).thenReturn(Optional.empty());
+
+        SNSException exception = Assertions.assertThrows(SNSException.class, () -> postService.delete(fixture.getPostId(),fixture.getUserName()));
+        assertEquals(ErrorCode.POST_NOT_FOUND, exception.getErrorCode());
+    }
+    @Test
+    @DisplayName("삭제 실패 - 유저 존재 x")
+    void delete_failed_user_not_found() {
+        TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+
+        when(userRepository.findByUserName(fixture.getUserName()))
+                .thenReturn(Optional.empty());
+        when(postRepository.findById(fixture.getPostId())).thenReturn(Optional.of(mock(Post.class)));
+
+        SNSException exception = Assertions.assertThrows(SNSException.class, () -> postService.delete(fixture.getPostId(), fixture.getUserName()));
+
+        assertEquals(ErrorCode.USERNAME_NOT_FOUND, exception.getErrorCode());
+    }
+
+
+
+    @Test
     @DisplayName("수정 실패 - 포스트 존재 x")
     void modify_failed_post_not_found() {
         TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
