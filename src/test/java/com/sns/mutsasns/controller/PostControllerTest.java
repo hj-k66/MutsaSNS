@@ -1,7 +1,6 @@
 package com.sns.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sns.mutsasns.configuration.EncrypterConfig;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 
@@ -46,8 +45,71 @@ class PostControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @MockBean
-    EncrypterConfig EncrypterConfig;
+    @Test
+    @DisplayName("포스트 삭제 성공")
+    @WithMockUser
+    void deletePost_success() throws Exception{
+        Long postId = 1L;
+
+        when(postService.delete(any(), any())).thenReturn(PostDto.builder()
+                .message("포스트 삭제 완료")
+                .postId(postId)
+                .build());
+
+        mockMvc.perform(delete("/api/v1/posts/" + postId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("포스트 삭제 실패 - 인증 실패")
+    @WithAnonymousUser
+    void deletePost_failed() throws Exception {
+        long postId = 1L;
+
+        //Controller에서는 JWT Filter Exception을 검증x
+//        when(postService.delete(any(),any(),any())).thenThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
+
+        mockMvc.perform(put("/api/v1/posts/" + postId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("포스트 삭제 실패 - 작성자 불일치")
+    @WithMockUser
+    void deletePost_failed_user() throws Exception{
+
+        when(postService.delete(any(),any())).thenThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
+
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_PERMISSION.getHttpStatus().value()));
+    }
+
+    @Test
+    @DisplayName("포스트 삭제 실패 - 데이터베이스 에러")
+    @WithMockUser
+    void deletePost_failed_db() throws Exception{
+
+        when(postService.delete(any(),any())).thenThrow(new SNSException(ErrorCode.DATABASE_ERROR));
+
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.DATABASE_ERROR.getHttpStatus().value()));
+    }
+
+
+
+
 
     @Test
     @DisplayName("포스트 수정 성공")
