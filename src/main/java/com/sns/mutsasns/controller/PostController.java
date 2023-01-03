@@ -1,10 +1,13 @@
 package com.sns.mutsasns.controller;
 
 import com.sns.mutsasns.domain.dto.Response;
+import com.sns.mutsasns.domain.dto.comment.CommentRequest;
+import com.sns.mutsasns.domain.dto.comment.CommentResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostWriteResponse;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.domain.dto.posts.PostResponse;
+import com.sns.mutsasns.service.CommentService;
 import com.sns.mutsasns.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,13 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
 
     private final PostService postService;
+    private final CommentService commentService;
+
+    @PostMapping("/{postsId}/comments")
+    public Response<CommentResponse> createComments(@PathVariable Long postsId, @RequestBody CommentRequest commentRequest){
+        CommentResponse commentResponse = commentService.create(postsId, commentRequest);
+        return Response.success(commentResponse);
+    }
 
     @DeleteMapping("/{id}")
     public Response<PostWriteResponse> deletePost(@PathVariable Long id, Authentication authentication){
