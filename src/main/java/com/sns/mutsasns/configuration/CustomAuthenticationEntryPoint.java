@@ -20,10 +20,12 @@ import java.io.IOException;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        log.info("인증 실패");
+        log.info("인증 실패, 로그인 하지 않았습니다.");
+
         ObjectMapper objectMapper = new ObjectMapper();
-        SNSException snsException = new SNSException(ErrorCode.INVALID_TOKEN);
-        Response<ErrorResult> error = Response.error(snsException.getErrorCode().getErrorResult());
+        SNSException snsException = new SNSException(ErrorCode.INVALID_PERMISSION, "로그인 하지 않은 사용자입니다.");
+        ErrorResult errorResult = new ErrorResult(snsException.getErrorCode(), snsException.toString());
+        Response<ErrorResult> error = Response.error(errorResult);
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
