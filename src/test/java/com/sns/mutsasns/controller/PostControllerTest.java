@@ -1,12 +1,17 @@
 package com.sns.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sns.mutsasns.domain.dto.comment.CommentRequest;
+import com.sns.mutsasns.domain.dto.comment.CommentResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 
 import com.sns.mutsasns.domain.entity.Post;
 import com.sns.mutsasns.exception.ErrorCode;
 import com.sns.mutsasns.exception.SNSException;
+import com.sns.mutsasns.fixture.CommentFixture;
+import com.sns.mutsasns.fixture.TestInfoFixture;
+import com.sns.mutsasns.service.CommentService;
 import com.sns.mutsasns.service.PostService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,9 +48,94 @@ class PostControllerTest {
 
     @MockBean
     PostService postService;
+    @MockBean
+    CommentService commentService;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Nested
+    class CommentTest{
+        @Nested
+        class CreateTest{
+            @Test
+            @DisplayName("댓글 작성 성공")
+            @WithMockUser(username = "user")
+            void createComment_succuess() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글댓글";
+                Long postId = fixture.getPostId();
+                CommentRequest commentRequest = new CommentRequest(comment);
+                CommentResponse commentResponse = new CommentResponse(CommentFixture.get(comment));
+
+                given(commentService.create(postId,commentRequest, fixture.getUserName())).willReturn(commentResponse);
+
+                //when - then
+                mockMvc.perform(post("/api/v1/posts/" + postId +"/comments")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.id").value(commentResponse.getId()))
+                        .andExpect(jsonPath("$.result.comment").value(commentResponse.getComment()))
+                        .andExpect(jsonPath("$.result.userName").value(commentResponse.getUserName()))
+                        .andExpect(jsonPath("$.result.postId").value(commentResponse.getPostId()));
+
+            }
+        }
+
+        @Test
+        @DisplayName("댓글 작성 실패 - 로그인 하지 않은 경우")
+        @WithAnonymousUser
+        void createComment_failed_not_login() throws Exception {
+            //given
+            TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+            String comment = "댓글댓글";
+            Long postId = fixture.getPostId();
+            CommentRequest commentRequest = new CommentRequest(comment);
+
+
+            //when - then
+            mockMvc.perform(post("/api/v1/posts/" + postId +"/comments")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsBytes(commentRequest)))
+                    .andDo(print())
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("댓글 작성 실패 - 게시물 존재하지 않은 경우")
+        @WithMockUser
+        void createComment_failed_no_post() throws Exception {
+            //given
+            TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+            String comment = "댓글댓글";
+            Long postId = 100L;
+            CommentRequest commentRequest = new CommentRequest(comment);
+
+            given(commentService.create(postId,commentRequest, fixture.getUserName())).willThrow(new SNSException(ErrorCode.POST_NOT_FOUND));
+
+            //when - then
+            mockMvc.perform(post("/api/v1/posts/" + postId +"/comments")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsBytes(commentRequest)))
+                    .andDo(print())
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.resultCode").exists())
+                    .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()))
+                    .andExpect(jsonPath("$.result.message").value(ErrorCode.POST_NOT_FOUND.getMessage()));
+
+        }
+
+    }
 
     @Nested
     class PostTest{
