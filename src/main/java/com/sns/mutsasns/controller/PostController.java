@@ -29,8 +29,8 @@ public class PostController {
     private final CommentService commentService;
 
     @PostMapping("/{postsId}/comments")
-    public Response<CommentResponse> createComments(@PathVariable Long postsId, @RequestBody CommentRequest commentRequest){
-        CommentResponse commentResponse = commentService.create(postsId, commentRequest);
+    public Response<CommentResponse> createComments(@PathVariable Long postsId, @RequestBody CommentRequest commentRequest,Authentication authentication){
+        CommentResponse commentResponse = commentService.create(postsId, commentRequest, authentication.getName());
         return Response.success(commentResponse);
     }
 

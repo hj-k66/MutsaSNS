@@ -1,10 +1,16 @@
 package com.sns.mutsasns.domain.dto.comment;
 
 import com.sns.mutsasns.domain.entity.Comment;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 @Getter
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommentResponse {
     private Long id;
     private String comment;
