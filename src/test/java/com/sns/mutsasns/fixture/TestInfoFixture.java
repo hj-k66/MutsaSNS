@@ -12,6 +12,7 @@ public class TestInfoFixture {
         info.setPassword("password");
         info.setTitle("title");
         info.setBody("body");
+        info.setCommentId(1L);
         return info;
     }
 
@@ -24,6 +25,7 @@ public class TestInfoFixture {
         private String password;
         private String title;
         private String body;
+        private Long commentId;
     }
 
 }

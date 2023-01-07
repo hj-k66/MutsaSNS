@@ -61,7 +61,7 @@ class PostControllerTest {
             @Test
             @DisplayName("댓글 작성 성공")
             @WithMockUser(username = "user")
-            void createComment_succuess() throws Exception {
+            void createComment_success() throws Exception {
                 //given
                 TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
                 String comment = "댓글댓글";
@@ -86,54 +86,195 @@ class PostControllerTest {
                         .andExpect(jsonPath("$.result.postId").value(commentResponse.getPostId()));
 
             }
+            @Test
+            @DisplayName("댓글 작성 실패 - 로그인 하지 않은 경우")
+            @WithAnonymousUser
+            void createComment_failed_not_login() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글댓글";
+                Long postId = fixture.getPostId();
+                CommentRequest commentRequest = new CommentRequest(comment);
+
+
+                //when - then
+                mockMvc.perform(post("/api/v1/posts/" + postId +"/comments")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+            }
+
+            @Test
+            @DisplayName("댓글 작성 실패 - 게시물 존재하지 않은 경우")
+            @WithMockUser
+            void createComment_failed_no_post() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글댓글";
+                Long postId = 100L;
+                CommentRequest commentRequest = new CommentRequest(comment);
+
+                given(commentService.create(postId,commentRequest, fixture.getUserName())).willThrow(new SNSException(ErrorCode.POST_NOT_FOUND));
+
+                //when - then
+                mockMvc.perform(post("/api/v1/posts/" + postId +"/comments")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isNotFound())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()))
+                        .andExpect(jsonPath("$.result.message").value(ErrorCode.POST_NOT_FOUND.getMessage()));
+
+            }
         }
 
-        @Test
-        @DisplayName("댓글 작성 실패 - 로그인 하지 않은 경우")
-        @WithAnonymousUser
-        void createComment_failed_not_login() throws Exception {
-            //given
-            TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
-            String comment = "댓글댓글";
-            Long postId = fixture.getPostId();
-            CommentRequest commentRequest = new CommentRequest(comment);
+        @Nested
+        class modifyTest{
+            @Test
+            @DisplayName("댓글 수정 성공")
+            @WithMockUser(username = "user")
+            void modifyComment_success() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글수정";
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+                CommentRequest commentRequest = new CommentRequest(comment);
+                CommentResponse commentResponse = new CommentResponse(CommentFixture.get(comment));
+
+                given(commentService.modify(postId,commentId,commentRequest, fixture.getUserName())).willReturn(commentResponse);
+
+                //when - then
+                mockMvc.perform(put("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.id").value(commentResponse.getId()))
+                        .andExpect(jsonPath("$.result.comment").value(commentResponse.getComment()))
+                        .andExpect(jsonPath("$.result.userName").value(commentResponse.getUserName()))
+                        .andExpect(jsonPath("$.result.postId").value(commentResponse.getPostId()))
+                        .andExpect(jsonPath("$.result.createdAt").value(commentResponse.getCreatedAt()))
+                        .andExpect(jsonPath("$.result.updatedAt").value(commentResponse.getUpdatedAt()));
+            }
+
+            @Test
+            @DisplayName("댓글 수정 실페 - 인증 실패")
+            @WithAnonymousUser
+            void modifyComment_fail_No_login() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글수정";
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+                CommentRequest commentRequest = new CommentRequest(comment);
 
 
-            //when - then
-            mockMvc.perform(post("/api/v1/posts/" + postId +"/comments")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsBytes(commentRequest)))
-                    .andDo(print())
-                    .andExpect(status().isUnauthorized());
+                //when - then
+                mockMvc.perform(put("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+
+            }
+
+            @Test
+            @DisplayName("댓글 작성 실패 - 게시물 존재하지 않은 경우")
+            @WithMockUser
+            void modifyComment_failed_no_post() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글댓글";
+                Long postId = 100L;
+                Long commentId = fixture.getCommentId();
+                CommentRequest commentRequest = new CommentRequest(comment);
+
+                given(commentService.modify(postId,commentId, commentRequest, fixture.getUserName())).willThrow(new SNSException(ErrorCode.POST_NOT_FOUND));
+
+                //when - then
+                mockMvc.perform(put("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isNotFound())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()))
+                        .andExpect(jsonPath("$.result.message").value(ErrorCode.POST_NOT_FOUND.getMessage()));
+
+            }
+
+            @Test
+            @DisplayName("댓글 수정 실패 - 작성자 불일치")
+            @WithMockUser(username = "user")
+            void modifyComment_failed_not_equal_user() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글댓글";
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+                CommentRequest commentRequest = new CommentRequest(comment);
+
+                given(commentService.modify(postId,commentId, commentRequest, fixture.getUserName())).willThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
+
+                //when - then
+                mockMvc.perform(put("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.INVALID_PERMISSION.name()))
+                        .andExpect(jsonPath("$.result.message").value(ErrorCode.INVALID_PERMISSION.getMessage()));
+
+            }
+
+            @Test
+            @DisplayName("댓글 수정 실패 - 데이터베이스 에러")
+            @WithMockUser(username = "user")
+            void modifyComment_failed_db() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                String comment = "댓글댓글";
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+                CommentRequest commentRequest = new CommentRequest(comment);
+
+                given(commentService.modify(postId,commentId, commentRequest, fixture.getUserName())).willThrow(new SNSException(ErrorCode.DATABASE_ERROR));
+
+                //when - then
+                mockMvc.perform(put("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(commentRequest)))
+                        .andDo(print())
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DATABASE_ERROR.name()))
+                        .andExpect(jsonPath("$.result.message").value(ErrorCode.DATABASE_ERROR.getMessage()));
+
+            }
         }
 
-        @Test
-        @DisplayName("댓글 작성 실패 - 게시물 존재하지 않은 경우")
-        @WithMockUser
-        void createComment_failed_no_post() throws Exception {
-            //given
-            TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
-            String comment = "댓글댓글";
-            Long postId = 100L;
-            CommentRequest commentRequest = new CommentRequest(comment);
 
-            given(commentService.create(postId,commentRequest, fixture.getUserName())).willThrow(new SNSException(ErrorCode.POST_NOT_FOUND));
-
-            //when - then
-            mockMvc.perform(post("/api/v1/posts/" + postId +"/comments")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsBytes(commentRequest)))
-                    .andDo(print())
-                    .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.resultCode").exists())
-                    .andExpect(jsonPath("$.resultCode").value("ERROR"))
-                    .andExpect(jsonPath("$.result").exists())
-                    .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()))
-                    .andExpect(jsonPath("$.result.message").value(ErrorCode.POST_NOT_FOUND.getMessage()));
-
-        }
 
     }
 
