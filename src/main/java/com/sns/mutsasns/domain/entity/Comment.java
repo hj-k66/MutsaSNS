@@ -1,5 +1,6 @@
 package com.sns.mutsasns.domain.entity;
 
+import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,4 +27,8 @@ public class Comment extends BaseEntity{
     @JoinColumn(name = "user_id")
     private User user;
 
+    public void changeToComment(CommentRequest commentRequest) {
+        this.comment = commentRequest.getComment();
+
+    }
 }

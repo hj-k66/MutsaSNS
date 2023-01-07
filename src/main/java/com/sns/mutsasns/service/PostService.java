@@ -9,6 +9,7 @@ import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
@@ -64,7 +66,7 @@ public class PostService {
         post.setTitle(postWriteRequest.getTitle());
         post.setBody(postWriteRequest.getBody());
         Post savedPost = postRepository.saveAndFlush(post);
-
+        log.info("포스트 수정 시간:"+post.getUpdatedAt());
         return PostDto.builder()
                 .message("포스트 수정 완료")
                 .postId(savedPost.getId())

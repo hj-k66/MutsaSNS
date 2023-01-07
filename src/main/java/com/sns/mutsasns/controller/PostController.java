@@ -28,6 +28,13 @@ public class PostController {
     private final PostService postService;
     private final CommentService commentService;
 
+    @PutMapping("/{postsId}/comments/{commentId}")
+    //함수 인자 너무 많음 >> refactoring 시 줄여보기
+    public Response<CommentResponse> modifyComments(@PathVariable Long postsId, @PathVariable Long commentId, @RequestBody CommentRequest commentRequest, Authentication authentication){
+        CommentResponse commentResponse = commentService.modify(postsId, commentId, commentRequest, authentication.getName());
+        return Response.success(commentResponse);
+    }
+
     @PostMapping("/{postsId}/comments")
     public Response<CommentResponse> createComments(@PathVariable Long postsId, @RequestBody CommentRequest commentRequest,Authentication authentication){
         CommentResponse commentResponse = commentService.create(postsId, commentRequest, authentication.getName());
