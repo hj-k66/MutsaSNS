@@ -31,6 +31,13 @@ public class PostController {
     private final PostService postService;
     private final CommentService commentService;
 
+    @GetMapping("/{postsId}/comments")
+    public Response<Page<CommentResponse>> getCommentList(@PathVariable Long postsId, @PageableDefault(size = 10)
+                                                    @SortDefault(sort = "createdAt",direction = Sort.Direction.DESC) Pageable pageable){
+        Page<CommentResponse> commentResponsePage = commentService.getAllComments(postsId,pageable);
+        return Response.success(commentResponsePage);
+    }
+
     @DeleteMapping("/{postsId}/comments/{commentId}")
     @Transactional
     public Response<CommentDeleteResponse> deleteComment(@PathVariable Long postsId, @PathVariable Long commentId, Authentication authentication){
@@ -93,10 +100,6 @@ public class PostController {
         Page<PostDto> allPostsDto = postService.getAllPosts(pageable);
         Page<PostResponse> allpostResponses = allPostsDto.map(PostDto::toResponse);
         return Response.success(allpostResponses);
-
     }
-
-
-
 
 }

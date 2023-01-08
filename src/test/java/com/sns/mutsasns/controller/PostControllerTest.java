@@ -391,6 +391,35 @@ class PostControllerTest {
             }
         }
 
+        @Nested
+        class GetTest{
+            @Test
+            @DisplayName("댓글 목록 조회 성공")
+            @WithMockUser
+            void getCommentList_success() throws Exception {
+                when(commentService.getAllComments(any(), any())).thenReturn(Page.empty());
+
+                mockMvc.perform(get("/api/v1/posts/1/comments")
+                                .param("page", "0")
+                                .param("size", "10")
+                                .param("sort", "createdAt,desc"))
+                        .andExpect(status().isOk())
+                        .andDo(print());
+
+                ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+                verify(commentService).getAllComments(any(),pageableCaptor.capture());
+                PageRequest pageable = (PageRequest) pageableCaptor.getValue();
+                System.out.println(pageable.toString());
+
+
+                Assertions.assertEquals(0, pageable.getPageNumber());
+                Assertions.assertEquals(10, pageable.getPageSize());
+                Assertions.assertEquals(Sort.by("createdAt", "desc"), pageable.withSort(Sort.by("createdAt", "desc")).getSort());
+
+            }
+        }
+
 
 
     }
