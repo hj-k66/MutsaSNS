@@ -87,6 +87,10 @@ public class CommentService {
     }
 
     public Page<CommentResponse> getAllComments(Long postId, Pageable pageable) {
+        //해당 Post 있는지 검증
+        postRepository.findById(postId)
+                .orElseThrow(() -> new SNSException(ErrorCode.POST_NOT_FOUND));
+
         Page<Comment> commentPage = commentRepository.findAllByPostId(postId,pageable);
         return commentPage.map(CommentResponse::new);
     }
