@@ -1,5 +1,6 @@
 package com.sns.mutsasns.service;
 
+import com.sns.mutsasns.domain.dto.comment.CommentDeleteResponse;
 import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import com.sns.mutsasns.domain.dto.comment.CommentResponse;
 import com.sns.mutsasns.domain.entity.Comment;
@@ -55,13 +56,31 @@ public class CommentService {
             throw new SNSException(ErrorCode.INVALID_PERMISSION);
         }
 
-
-
         comment.changeToComment(commentRequest);
         commentRepository.saveAndFlush(comment);
         CommentResponse commentResponse = new CommentResponse(comment);
         log.info("comment update:"+comment.getUpdatedAt());
         return commentResponse;
 
+    }
+
+    @Transactional
+    public CommentDeleteResponse delete(Long postsId, Long commentId, String userName) {
+        //1. 해당 Post 있는지 검증
+        Post post = postRepository.findById(postsId)
+                .orElseThrow(() -> new SNSException(ErrorCode.POST_NOT_FOUND));
+        //2. 유저 존재 x
+        User loginUser = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+        //3. 해당 댓글 있는지 검증
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new SNSException(ErrorCode.COMMENT_NOT_FOUND));
+        //4. 댓글 작성한 회원과 삭제하려는 회원이 같은지 검증 >> comment Domain 로직으로 뺄 수 있지 않을까
+        if(!Objects.equals(loginUser, comment.getUser())){
+            throw new SNSException(ErrorCode.INVALID_PERMISSION);
+        }
+
+        comment.delete();
+        return new CommentDeleteResponse("댓글 삭제 완료", commentId);
     }
 }

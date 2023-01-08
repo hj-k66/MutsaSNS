@@ -1,9 +1,9 @@
 package com.sns.mutsasns.domain.dto;
 
 
-import com.sns.mutsasns.exception.ErrorResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 
 @AllArgsConstructor
 @Getter
