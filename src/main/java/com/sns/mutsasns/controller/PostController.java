@@ -4,11 +4,13 @@ import com.sns.mutsasns.domain.dto.Response;
 import com.sns.mutsasns.domain.dto.comment.CommentDeleteResponse;
 import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import com.sns.mutsasns.domain.dto.comment.CommentResponse;
+import com.sns.mutsasns.domain.dto.like.LikeResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostWriteResponse;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.domain.dto.posts.PostResponse;
 import com.sns.mutsasns.service.CommentService;
+import com.sns.mutsasns.service.LikeService;
 import com.sns.mutsasns.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,13 @@ public class PostController {
 
     private final PostService postService;
     private final CommentService commentService;
+    private final LikeService likeService;
+
+    @PostMapping("/{postId}/likes")
+    public Response<LikeResponse> createLike(@PathVariable Long postId, Authentication authentication){
+        LikeResponse likeResponse = likeService.createLike(postId, authentication.getName());
+        return null;
+    }
 
     @GetMapping("/{postsId}/comments")
     public Response<Page<CommentResponse>> getCommentList(@PathVariable Long postsId, @PageableDefault(size = 10)
