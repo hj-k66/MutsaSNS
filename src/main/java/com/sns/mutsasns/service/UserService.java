@@ -23,6 +23,10 @@ public class UserService {
     @Value("${jwt.token.secret}")
     private String secretKey;
     private long expireTimeMs = 1000 * 60 * 60; //1시간
+    Validator validator = Validator.builder()
+            .userRepository(userRepository)
+            .build();
+
 
     public User getUserByUserName(String userName){
         return userRepository.findByUserName(userName)
@@ -44,7 +48,7 @@ public class UserService {
     public String login(UserLoginRequest userLoginRequest) {
         String userName = userLoginRequest.getUserName();
         //해당 userName이 없는 경우
-        User user = Validator.validateUser(userName, userRepository);
+        User user = validator.validateUser(userName);
         //해당 password가 틀린 경우
         if(!encoder.matches(userLoginRequest.getPassword(),user.getPassword())){
             throw new SNSException(ErrorCode.INVALID_PASSWORD);

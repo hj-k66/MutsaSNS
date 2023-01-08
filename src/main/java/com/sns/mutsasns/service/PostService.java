@@ -28,9 +28,11 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
 
+    Validator validator = new Validator(postRepository, userRepository, commentRepository);
+
     public PostDto create(PostWriteRequest request, String userName){
         //해당 user 있는지 검증
-        User user = Validator.validateUser(userName, userRepository);
+        User user = validator.validateUser(userName);
 
         Post post = Post.builder()
                 .title(request.getTitle())
@@ -47,7 +49,7 @@ public class PostService {
 
     public PostDto getOnePost(Long id){
         //해당 post 있는지 검증
-        Post post = Validator.validatePost(id, postRepository);
+        Post post = validator.validatePost(id);
         return post.toDto();
     }
 
@@ -58,11 +60,11 @@ public class PostService {
 
     public PostDto modify(Long postId, PostWriteRequest postWriteRequest, String userName) {
         //포스트 존재 x
-        Post post = Validator.validatePost(postId, postRepository);
+        Post post = validator.validatePost(postId);
         //유저 존재 x
-        User user = Validator.validateUser(userName, userRepository);
+        User user = validator.validateUser(userName);
         //포스트 작성자 != 유저
-        Validator.validateUserPermission(user.getId(), post.getUser().getId());
+        validator.validateUserPermission(user.getId(), post.getUser().getId());
 
         post.setTitle(postWriteRequest.getTitle());
         post.setBody(postWriteRequest.getBody());
@@ -77,11 +79,11 @@ public class PostService {
     @Transactional
     public PostDto delete(Long postId, String userName) {
         //포스트 존재 x
-        Post post = Validator.validatePost(postId, postRepository);
+        Post post = validator.validatePost(postId);
         //유저 존재 x
-        User user = Validator.validateUser(userName, userRepository);
+        User user = validator.validateUser(userName);
         //포스트 작성자 != 삭제하려는 유저
-        Validator.validateUserPermission(user.getId(), post.getUser().getId());
+        validator.validateUserPermission(user.getId(), post.getUser().getId());
 
         //해당 post의 댓글 모두 삭제
         List<Comment> commentAll = commentRepository.findAllByPostId(postId);
