@@ -74,7 +74,7 @@ public class CommentService {
         User loginUser = validator.validateUser(userName);
         //3. 해당 댓글 있는지 검증
         Comment comment = validator.validateComment(commentId);
-        //4. 댓글 작성한 회원과 삭제하려는 회원이 같은지 검증 >> comment Domain 로직으로 뺄 수 있지 않을까
+        //4. 댓글 작성한 회원과 삭제하려는 회원이 같은지 검증
         validator.validateUserPermission(loginUser.getId(), comment.getUser().getId());
 
         comment.delete();

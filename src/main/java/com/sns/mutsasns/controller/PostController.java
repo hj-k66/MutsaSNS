@@ -37,7 +37,7 @@ public class PostController {
     @PostMapping("/{postId}/likes")
     public Response<LikeResponse> createLike(@PathVariable Long postId, Authentication authentication){
         LikeResponse likeResponse = likeService.createLike(postId, authentication.getName());
-        return null;
+        return Response.success(likeResponse);
     }
 
     @GetMapping("/{postsId}/comments")
