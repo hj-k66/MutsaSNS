@@ -8,6 +8,7 @@ import com.sns.mutsasns.exception.ErrorCode;
 import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.respository.UserRepository;
 import com.sns.mutsasns.utils.JwtTokenUtil;
+import com.sns.mutsasns.utils.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -43,8 +44,7 @@ public class UserService {
     public String login(UserLoginRequest userLoginRequest) {
         String userName = userLoginRequest.getUserName();
         //해당 userName이 없는 경우
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+        User user = Validator.validateUser(userName, userRepository);
         //해당 password가 틀린 경우
         if(!encoder.matches(userLoginRequest.getPassword(),user.getPassword())){
             throw new SNSException(ErrorCode.INVALID_PASSWORD);
