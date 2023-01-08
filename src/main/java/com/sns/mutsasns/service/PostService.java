@@ -2,10 +2,11 @@ package com.sns.mutsasns.service;
 
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
-import com.sns.mutsasns.domain.entity.Post;
-import com.sns.mutsasns.domain.entity.User;
+import com.sns.mutsasns.domain.entity.*;
 import com.sns.mutsasns.exception.ErrorCode;
 import com.sns.mutsasns.exception.SNSException;
+import com.sns.mutsasns.respository.CommentRepository;
+import com.sns.mutsasns.respository.LikeRepository;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -24,6 +26,8 @@ import java.util.Objects;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
 
     public PostDto create(PostWriteRequest request, String userName){
         User user = userRepository.findByUserName(userName)
@@ -86,7 +90,12 @@ public class PostService {
         if(!Objects.equals(post.getUser().getId(), user.getId())){
             throw new SNSException(ErrorCode.INVALID_PERMISSION);
         }
-
+        //해당 post의 댓글 모두 삭제
+        List<Comment> commentAll = commentRepository.findAllByPostId(postId);
+        commentAll .forEach(BaseEntity::delete);
+        //해당 post의 좋아요 모두 삭제
+        List<Like> LikeAll = likeRepository.findAllByPostId(postId);
+        LikeAll.forEach(BaseEntity::delete);
         post.delete();
         return PostDto.builder()
                 .message("포스트 삭제 완료")
