@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Objects;
 
 
@@ -73,6 +74,7 @@ public class PostService {
                 .build();
     }
 
+    @Transactional
     public PostDto delete(Long postId, String userName) {
         //포스트 존재 x
         Post post = postRepository.findById(postId)
@@ -85,7 +87,7 @@ public class PostService {
             throw new SNSException(ErrorCode.INVALID_PERMISSION);
         }
 
-        postRepository.delete(post);
+        post.delete();
         return PostDto.builder()
                 .message("포스트 삭제 완료")
                 .postId(post.getId())

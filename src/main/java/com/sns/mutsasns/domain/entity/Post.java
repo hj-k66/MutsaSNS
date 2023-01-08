@@ -2,8 +2,10 @@ package com.sns.mutsasns.domain.entity;
 
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @AllArgsConstructor
@@ -11,6 +13,7 @@ import javax.persistence.*;
 @Builder
 @Getter
 @Setter
+@Where(clause = "deleted_at IS NULL")
 public class Post extends BaseEntity{
 
     @Id
@@ -19,10 +22,16 @@ public class Post extends BaseEntity{
 
     private String body;
     private String title;
+    private LocalDateTime deletedAt;
+    public void delete(){
+        this.deletedAt = LocalDateTime.now();
+    }
+
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
 
     public PostDto toDto(){
         return PostDto.builder()
