@@ -11,7 +11,6 @@ import com.sns.mutsasns.respository.CommentRepository;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import com.sns.mutsasns.utils.Validator;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@RequiredArgsConstructor
 @Service
 @Slf4j
 public class CommentService {
@@ -27,9 +25,15 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final Validator validator;
 
-    Validator validator = new Validator(postRepository, userRepository, commentRepository);
 
+    public CommentService(PostRepository postRepository, CommentRepository commentRepository, UserRepository userRepository) {
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
+        this.validator = new Validator(postRepository,userRepository,commentRepository);
+    }
 
     public CommentResponse create(Long postsId, CommentRequest commentRequest, String userName) {
         //해당 Post 있는지 검증

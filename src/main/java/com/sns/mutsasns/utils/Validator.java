@@ -9,13 +9,17 @@ import com.sns.mutsasns.respository.CommentRepository;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import lombok.Builder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+@Component
 public class Validator {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
 
+    @Autowired
     @Builder
     public Validator(PostRepository postRepository,UserRepository userRepository,CommentRepository commentRepository){
         this.userRepository = userRepository;

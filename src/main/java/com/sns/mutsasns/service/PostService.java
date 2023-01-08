@@ -9,7 +9,6 @@ import com.sns.mutsasns.respository.LikeRepository;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import com.sns.mutsasns.utils.Validator;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,15 +19,23 @@ import java.util.List;
 
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
+    private final Validator validator;
+    public PostService(PostRepository postRepository, UserRepository userRepository, CommentRepository commentRepository, LikeRepository likeRepository) {
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
+        this.likeRepository = likeRepository;
+        this.validator = new Validator(postRepository, userRepository, commentRepository);
+    }
 
-    Validator validator = new Validator(postRepository, userRepository, commentRepository);
+
+
 
     public PostDto create(PostWriteRequest request, String userName){
         //해당 user 있는지 검증

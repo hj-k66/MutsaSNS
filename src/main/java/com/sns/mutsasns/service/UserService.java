@@ -9,23 +9,29 @@ import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.respository.UserRepository;
 import com.sns.mutsasns.utils.JwtTokenUtil;
 import com.sns.mutsasns.utils.Validator;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
+
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+    private final Validator validator;
 
     @Value("${jwt.token.secret}")
     private String secretKey;
     private long expireTimeMs = 1000 * 60 * 60; //1시간
-    Validator validator = Validator.builder()
-            .userRepository(userRepository)
-            .build();
+
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder encoder) {
+        this.userRepository = userRepository;
+        this.encoder = encoder;
+        this.validator = Validator.builder()
+                .userRepository(userRepository)
+                .build();
+    }
 
 
     public User getUserByUserName(String userName){
