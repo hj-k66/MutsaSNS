@@ -1,6 +1,7 @@
 package com.sns.mutsasns.controller;
 
 import com.sns.mutsasns.domain.dto.Response;
+import com.sns.mutsasns.domain.dto.comment.CommentDeleteResponse;
 import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import com.sns.mutsasns.domain.dto.comment.CommentResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
@@ -19,6 +20,8 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
+
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -27,6 +30,14 @@ public class PostController {
 
     private final PostService postService;
     private final CommentService commentService;
+
+    @DeleteMapping("/{postsId}/comments/{commentId}")
+    @Transactional
+    public Response<CommentDeleteResponse> deleteComment(@PathVariable Long postsId, @PathVariable Long commentId, Authentication authentication){
+        CommentDeleteResponse commentDeleteResponse = commentService.delete(postsId,commentId,authentication.getName());
+        return Response.success(commentDeleteResponse);
+    }
+
 
     @PutMapping("/{postsId}/comments/{commentId}")
     //함수 인자 너무 많음 >> refactoring 시 줄여보기

@@ -28,6 +28,8 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers("/api/v1/users/join", "/api/v1/users/login").permitAll() // join, login 허용
                 .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated()
+                .antMatchers(HttpMethod.DELETE,"/api/v1/**").authenticated()
+                .antMatchers(HttpMethod.PUT,"/api/v1/**").authenticated()
                 .and()
                 .exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHadler())
                 .and()

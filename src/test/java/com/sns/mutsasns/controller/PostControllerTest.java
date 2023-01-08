@@ -1,6 +1,7 @@
 package com.sns.mutsasns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sns.mutsasns.domain.dto.comment.CommentDeleteResponse;
 import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import com.sns.mutsasns.domain.dto.comment.CommentResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
@@ -190,7 +191,7 @@ class PostControllerTest {
             }
 
             @Test
-            @DisplayName("댓글 작성 실패 - 게시물 존재하지 않은 경우")
+            @DisplayName("댓글 수정 실패 - 게시물 존재하지 않은 경우")
             @WithMockUser
             void modifyComment_failed_no_post() throws Exception {
                 //given
@@ -265,6 +266,122 @@ class PostControllerTest {
                                 .content(objectMapper.writeValueAsBytes(commentRequest)))
                         .andDo(print())
                         .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.DATABASE_ERROR.name()))
+                        .andExpect(jsonPath("$.result.message").value(ErrorCode.DATABASE_ERROR.getMessage()));
+
+            }
+        }
+
+        @Nested
+        class deleteTest{
+            @Test
+            @DisplayName("댓글 삭제 성공")
+            @WithMockUser(username = "user")
+            void deleteComment_success() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+                CommentDeleteResponse commentDeleteResponse = new CommentDeleteResponse("댓글 삭제 완료", commentId);
+
+                given(commentService.delete(postId,commentId,fixture.getUserName())).willReturn(commentDeleteResponse);
+
+                //when - then
+                mockMvc.perform(delete("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf()))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.message").value("댓글 삭제 완료"))
+                        .andExpect(jsonPath("$.result.commentId").value(commentId));
+            }
+
+            @Test
+            @DisplayName("댓글 삭제 실페 - 인증 실패")
+            @WithAnonymousUser
+            void deleteComment_fail_No_login() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+
+
+                //when - then
+                mockMvc.perform(put("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf()))
+                        .andDo(print())
+                        .andExpect(status().isUnauthorized());
+
+            }
+
+            @Test
+            @DisplayName("댓글 삭제 실패 - 게시물 존재하지 않은 경우")
+            @WithMockUser
+            void deleteComment_failed_no_post() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                Long postId = 100L;
+                Long commentId = fixture.getCommentId();
+
+                given(commentService.delete(postId,commentId, fixture.getUserName())).willThrow(new SNSException(ErrorCode.POST_NOT_FOUND));
+
+                //when - then
+                mockMvc.perform(delete("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf()))
+                        .andDo(print())
+                        .andExpect(status().is(ErrorCode.POST_NOT_FOUND.getHttpStatus().value()))
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()))
+                        .andExpect(jsonPath("$.result.message").value(ErrorCode.POST_NOT_FOUND.getMessage()));
+
+            }
+
+            @Test
+            @DisplayName("댓글 삭제 실패 - 작성자 불일치")
+            @WithMockUser(username = "user")
+            void deleteComment_failed_not_equal_user() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+
+                given(commentService.delete(postId,commentId, fixture.getUserName())).willThrow(new SNSException(ErrorCode.INVALID_PERMISSION));
+
+                //when - then
+                mockMvc.perform(delete("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf()))
+                        .andDo(print())
+                        .andExpect(status().is(ErrorCode.INVALID_PERMISSION.getHttpStatus().value()))
+                        .andExpect(jsonPath("$.resultCode").exists())
+                        .andExpect(jsonPath("$.resultCode").value("ERROR"))
+                        .andExpect(jsonPath("$.result").exists())
+                        .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.INVALID_PERMISSION.name()))
+                        .andExpect(jsonPath("$.result.message").value(ErrorCode.INVALID_PERMISSION.getMessage()));
+
+            }
+
+            @Test
+            @DisplayName("댓글 삭제 실패 - 데이터베이스 에러")
+            @WithMockUser(username = "user")
+            void deleteComment_failed_db() throws Exception {
+                //given
+                TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+                Long postId = fixture.getPostId();
+                Long commentId = fixture.getCommentId();
+
+                given(commentService.delete(postId,commentId, fixture.getUserName())).willThrow(new SNSException(ErrorCode.DATABASE_ERROR));
+
+                //when - then
+                mockMvc.perform(delete("/api/v1/posts/" + postId +"/comments/" + commentId)
+                                .with(csrf()))
+                        .andDo(print())
+                        .andExpect(status().is(ErrorCode.DATABASE_ERROR.getHttpStatus().value()))
                         .andExpect(jsonPath("$.resultCode").exists())
                         .andExpect(jsonPath("$.resultCode").value("ERROR"))
                         .andExpect(jsonPath("$.result").exists())
