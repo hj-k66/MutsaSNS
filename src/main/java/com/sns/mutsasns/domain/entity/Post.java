@@ -5,7 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @AllArgsConstructor
@@ -22,12 +21,7 @@ public class Post extends BaseEntity{
 
     private String body;
     private String title;
-    private LocalDateTime deletedAt;
-    public void delete(){
-        this.deletedAt = LocalDateTime.now();
-    }
-
-
+    
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

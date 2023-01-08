@@ -21,7 +21,11 @@ public class BaseEntity {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    private LocalDateTime deletedAt;
 
+    public void delete(){
+        this.deletedAt = LocalDateTime.now();
+    }
     @PrePersist
     public void onPrePersist(){
         this.createdAt = LocalDateTime.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
