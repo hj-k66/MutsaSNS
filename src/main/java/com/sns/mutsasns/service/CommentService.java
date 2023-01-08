@@ -13,6 +13,8 @@ import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -82,5 +84,10 @@ public class CommentService {
 
         comment.delete();
         return new CommentDeleteResponse("댓글 삭제 완료", commentId);
+    }
+
+    public Page<CommentResponse> getAllComments(Long postId, Pageable pageable) {
+        Page<Comment> commentPage = commentRepository.findAllByPostId(postId,pageable);
+        return commentPage.map(CommentResponse::new);
     }
 }
