@@ -1,5 +1,6 @@
 package com.sns.mutsasns.service;
 
+import com.sns.mutsasns.domain.dto.posts.PostResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 import com.sns.mutsasns.domain.entity.*;
@@ -103,5 +104,12 @@ public class PostService {
                 .message("포스트 삭제 완료")
                 .postId(post.getId())
                 .build();
+    }
+
+    public Page<PostResponse> getMyFeed(String userName, Pageable pageable) {
+        //유저 존재 x
+        User user = validator.validateUser(userName);
+        Page<Post> postPage = postRepository.findAllByUserId(user.getId(), pageable);
+        return postPage.map(PostResponse::new);
     }
 }
