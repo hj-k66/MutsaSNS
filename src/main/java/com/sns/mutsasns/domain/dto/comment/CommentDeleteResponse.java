@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommentDeleteResponse {
     private String message;
-    private Long commentId;
+    private Long id;
 }

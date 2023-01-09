@@ -4,6 +4,7 @@ import com.sns.mutsasns.domain.dto.Response;
 import com.sns.mutsasns.domain.dto.comment.CommentDeleteResponse;
 import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import com.sns.mutsasns.domain.dto.comment.CommentResponse;
+import com.sns.mutsasns.domain.dto.like.LikeCountResponse;
 import com.sns.mutsasns.domain.dto.like.LikeResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostWriteResponse;
@@ -34,10 +35,16 @@ public class PostController {
     private final CommentService commentService;
     private final LikeService likeService;
 
+    @GetMapping("/{postId}/likes")
+    public Response<Integer> getLikeCount(@PathVariable Long postId){
+        LikeCountResponse likeCountResponse = likeService.getLikeCount(postId);
+        return Response.success(likeCountResponse.getLikeCount());
+    }
+
     @PostMapping("/{postId}/likes")
-    public Response<LikeResponse> createLike(@PathVariable Long postId, Authentication authentication){
+    public Response<String> createLike(@PathVariable Long postId, Authentication authentication){
         LikeResponse likeResponse = likeService.createLike(postId, authentication.getName());
-        return Response.success(likeResponse);
+        return Response.success(likeResponse.getMessage());
     }
 
     @GetMapping("/{postsId}/comments")
