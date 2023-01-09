@@ -13,6 +13,7 @@ import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.fixture.CommentFixture;
 import com.sns.mutsasns.fixture.TestInfoFixture;
 import com.sns.mutsasns.service.CommentService;
+import com.sns.mutsasns.service.LikeService;
 import com.sns.mutsasns.service.PostService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -51,9 +52,53 @@ class PostControllerTest {
     PostService postService;
     @MockBean
     CommentService commentService;
+    @MockBean
+    LikeService likeService;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Nested
+    class MyFeedTest{
+        @Test
+        @DisplayName("마이피드 조회 성공")
+        @WithMockUser
+        void getMyFeed_success() throws Exception {
+            when(postService.getMyFeed(any(), any())).thenReturn(Page.empty());
+
+            mockMvc.perform(get("/api/v1/posts/my")
+                            .param("page", "0")
+                            .param("size", "20")
+                            .param("sort", "createdAt,desc"))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+            verify(postService).getMyFeed(any(),pageableCaptor.capture());
+            PageRequest pageable = (PageRequest) pageableCaptor.getValue();
+            System.out.println(pageable.toString());
+
+
+            Assertions.assertEquals(0, pageable.getPageNumber());
+            Assertions.assertEquals(20, pageable.getPageSize());
+            Assertions.assertEquals(Sort.by("createdAt", "desc"), pageable.withSort(Sort.by("createdAt", "desc")).getSort());
+
+        }
+
+        @Test
+        @DisplayName("마이피드 조회 실패 - 로그인 하지 않은 경우")
+        @WithAnonymousUser
+        void getMyFeed_fail_no_login() throws Exception {
+            when(postService.getMyFeed(any(), any())).thenReturn(Page.empty());
+
+            mockMvc.perform(get("/api/v1/posts/my"))
+                    .andExpect(status().isUnauthorized())
+                    .andDo(print());
+
+        }
+
+    }
 
     @Nested
     class CommentTest{
