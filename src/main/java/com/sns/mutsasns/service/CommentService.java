@@ -1,12 +1,15 @@
 package com.sns.mutsasns.service;
 
+import com.sns.mutsasns.domain.dto.alarm.AlarmType;
 import com.sns.mutsasns.domain.dto.comment.CommentDeleteResponse;
 import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import com.sns.mutsasns.domain.dto.comment.CommentResponse;
+import com.sns.mutsasns.domain.entity.Alarm;
 import com.sns.mutsasns.domain.entity.Comment;
 import com.sns.mutsasns.domain.entity.Post;
 import com.sns.mutsasns.domain.entity.User;
 
+import com.sns.mutsasns.respository.AlarmRepository;
 import com.sns.mutsasns.respository.CommentRepository;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
@@ -25,16 +28,19 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final AlarmRepository alarmRepository;
     private final Validator validator;
 
 
-    public CommentService(PostRepository postRepository, CommentRepository commentRepository, UserRepository userRepository) {
+    public CommentService(PostRepository postRepository, CommentRepository commentRepository, UserRepository userRepository, AlarmRepository alarmRepository) {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
+        this.alarmRepository = alarmRepository;
         this.validator = new Validator(postRepository,userRepository,commentRepository);
     }
 
+    @Transactional
     public CommentResponse create(Long postsId, CommentRequest commentRequest, String userName) {
         //해당 Post 있는지 검증
         Post post = validator.validatePost(postsId);
@@ -42,6 +48,8 @@ public class CommentService {
         User user = validator.validateUser(userName);
 
         Comment savedComment = commentRepository.save(commentRequest.toEntity(post, user));
+        //해당 post에 알림 보내기
+        alarmRepository.save(Alarm.makeAlarm(AlarmType.NEW_COMMENT_ON_POST,user.getId(),post));
         log.info(commentRequest.getComment());
         return new CommentResponse(savedComment);
     }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 public class AlarmResponse {
     private Long id;
-    private AlarmType alarmType;
+    private String alarmType;
     private Long fromUserId;
     private Long targetId;
     private String text;
