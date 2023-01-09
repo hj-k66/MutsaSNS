@@ -26,5 +26,4 @@ public class Like extends BaseEntity{
     @JoinColumn(name = "post_id")
     private Post post;
 
-
 }

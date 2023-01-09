@@ -1,5 +1,6 @@
 package com.sns.mutsasns.service;
 
+import com.sns.mutsasns.domain.dto.like.LikeCountResponse;
 import com.sns.mutsasns.domain.dto.like.LikeResponse;
 import com.sns.mutsasns.domain.entity.Like;
 import com.sns.mutsasns.domain.entity.Post;
@@ -51,5 +52,13 @@ public class LikeService {
             message = userName + "님이 좋아요를 눌렀습니다.";
         }
         return new LikeResponse(message);
+    }
+
+    public LikeCountResponse getLikeCount(Long postId) {
+        //해당 포스트 있는지 검증
+        validator.validatePost(postId);
+
+        int likeCount = likeRepository.countByPostId(postId);
+        return new LikeCountResponse(likeCount);
     }
 }

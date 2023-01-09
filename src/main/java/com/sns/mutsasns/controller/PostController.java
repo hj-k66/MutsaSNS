@@ -39,6 +39,7 @@ public class PostController {
     public Response<Integer> getLikeCount(@PathVariable Long postId){
         LikeCountResponse likeCountResponse = likeService.getLikeCount(postId);
         return Response.success(likeCountResponse.getLikeCount());
+
     }
 
     @PostMapping("/{postId}/likes")
