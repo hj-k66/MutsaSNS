@@ -9,6 +9,8 @@ import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.fixture.PostFixture;
 import com.sns.mutsasns.fixture.TestInfoFixture;
 import com.sns.mutsasns.fixture.UserFixture;
+import com.sns.mutsasns.respository.CommentRepository;
+import com.sns.mutsasns.respository.LikeRepository;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
 import org.junit.jupiter.api.*;
@@ -27,10 +29,12 @@ class PostServiceTest {
 
     PostRepository postRepository = mock(PostRepository.class);
     UserRepository userRepository = mock(UserRepository.class);
+    CommentRepository commentRepository = mock(CommentRepository.class);
+    LikeRepository likeRepository = mock(LikeRepository.class);
 
     @BeforeEach
     void setUp() {
-        postService = new PostService(postRepository, userRepository);
+        postService = new PostService(postRepository, userRepository,commentRepository, likeRepository);
     }
 
     @Nested

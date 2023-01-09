@@ -8,20 +8,31 @@ import com.sns.mutsasns.exception.ErrorCode;
 import com.sns.mutsasns.exception.SNSException;
 import com.sns.mutsasns.respository.UserRepository;
 import com.sns.mutsasns.utils.JwtTokenUtil;
-import lombok.RequiredArgsConstructor;
+import com.sns.mutsasns.utils.Validator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
+
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+    private final Validator validator;
 
     @Value("${jwt.token.secret}")
     private String secretKey;
     private long expireTimeMs = 1000 * 60 * 60; //1시간
+
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder encoder) {
+        this.userRepository = userRepository;
+        this.encoder = encoder;
+        this.validator = Validator.builder()
+                .userRepository(userRepository)
+                .build();
+    }
+
 
     public User getUserByUserName(String userName){
         return userRepository.findByUserName(userName)
@@ -43,8 +54,7 @@ public class UserService {
     public String login(UserLoginRequest userLoginRequest) {
         String userName = userLoginRequest.getUserName();
         //해당 userName이 없는 경우
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+        User user = validator.validateUser(userName);
         //해당 password가 틀린 경우
         if(!encoder.matches(userLoginRequest.getPassword(),user.getPassword())){
             throw new SNSException(ErrorCode.INVALID_PASSWORD);

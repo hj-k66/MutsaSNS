@@ -2,32 +2,45 @@ package com.sns.mutsasns.service;
 
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
-import com.sns.mutsasns.domain.entity.Post;
-import com.sns.mutsasns.domain.entity.User;
-import com.sns.mutsasns.exception.ErrorCode;
-import com.sns.mutsasns.exception.SNSException;
+import com.sns.mutsasns.domain.entity.*;
+
+import com.sns.mutsasns.respository.CommentRepository;
+import com.sns.mutsasns.respository.LikeRepository;
 import com.sns.mutsasns.respository.PostRepository;
 import com.sns.mutsasns.respository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import com.sns.mutsasns.utils.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Objects;
+import java.util.List;
 
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
+    private final Validator validator;
+    public PostService(PostRepository postRepository, UserRepository userRepository, CommentRepository commentRepository, LikeRepository likeRepository) {
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
+        this.likeRepository = likeRepository;
+        this.validator = new Validator(postRepository, userRepository, commentRepository);
+    }
+
+
+
 
     public PostDto create(PostWriteRequest request, String userName){
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+        //해당 user 있는지 검증
+        User user = validator.validateUser(userName);
+
         Post post = Post.builder()
                 .title(request.getTitle())
                 .body(request.getBody())
@@ -42,8 +55,8 @@ public class PostService {
     }
 
     public PostDto getOnePost(Long id){
-        Post post = postRepository.findById(id)
-                .orElseThrow(()-> new SNSException(ErrorCode.POST_NOT_FOUND));
+        //해당 post 있는지 검증
+        Post post = validator.validatePost(id);
         return post.toDto();
     }
 
@@ -54,15 +67,11 @@ public class PostService {
 
     public PostDto modify(Long postId, PostWriteRequest postWriteRequest, String userName) {
         //포스트 존재 x
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new SNSException(ErrorCode.POST_NOT_FOUND));
+        Post post = validator.validatePost(postId);
         //유저 존재 x
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+        User user = validator.validateUser(userName);
         //포스트 작성자 != 유저
-        if(!Objects.equals(post.getUser().getId(), user.getId())){
-            throw new SNSException(ErrorCode.INVALID_PERMISSION);
-        }
+        validator.validateUserPermission(user.getId(), post.getUser().getId());
 
         post.setTitle(postWriteRequest.getTitle());
         post.setBody(postWriteRequest.getBody());
@@ -77,16 +86,18 @@ public class PostService {
     @Transactional
     public PostDto delete(Long postId, String userName) {
         //포스트 존재 x
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new SNSException(ErrorCode.POST_NOT_FOUND));
+        Post post = validator.validatePost(postId);
         //유저 존재 x
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new SNSException(ErrorCode.USERNAME_NOT_FOUND));
+        User user = validator.validateUser(userName);
         //포스트 작성자 != 삭제하려는 유저
-        if(!Objects.equals(post.getUser().getId(), user.getId())){
-            throw new SNSException(ErrorCode.INVALID_PERMISSION);
-        }
+        validator.validateUserPermission(user.getId(), post.getUser().getId());
 
+        //해당 post의 댓글 모두 삭제
+        List<Comment> commentAll = commentRepository.findAllByPostId(postId);
+        commentAll .forEach(BaseEntity::delete);
+        //해당 post의 좋아요 모두 삭제
+        List<Like> LikeAll = likeRepository.findAllByPostId(postId);
+        LikeAll.forEach(BaseEntity::delete);
         post.delete();
         return PostDto.builder()
                 .message("포스트 삭제 완료")
