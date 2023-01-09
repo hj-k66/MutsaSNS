@@ -31,6 +31,5 @@ public class Comment extends BaseEntity{
 
     public void changeToComment(CommentRequest commentRequest) {
         this.comment = commentRequest.getComment();
-
     }
 }
