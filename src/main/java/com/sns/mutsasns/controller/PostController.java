@@ -35,6 +35,13 @@ public class PostController {
     private final CommentService commentService;
     private final LikeService likeService;
 
+    @GetMapping("/my")
+    public Response<Page<PostResponse>> getMyFeed(Authentication authentication,@PageableDefault(size = 20)
+                                            @SortDefault(sort = "createdAt",direction = Sort.Direction.DESC) Pageable pageable ){
+        Page<PostResponse> postResponses = postService.getMyFeed(authentication.getName(), pageable);
+        return Response.success(postResponses);
+    }
+
     @GetMapping("/{postId}/likes")
     public Response<Integer> getLikeCount(@PathVariable Long postId){
         LikeCountResponse likeCountResponse = likeService.getLikeCount(postId);
