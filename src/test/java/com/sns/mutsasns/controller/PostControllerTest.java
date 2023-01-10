@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sns.mutsasns.domain.dto.comment.CommentDeleteResponse;
 import com.sns.mutsasns.domain.dto.comment.CommentRequest;
 import com.sns.mutsasns.domain.dto.comment.CommentResponse;
+import com.sns.mutsasns.domain.dto.like.LikeResponse;
 import com.sns.mutsasns.domain.dto.posts.PostWriteRequest;
 import com.sns.mutsasns.domain.dto.posts.PostDto;
 
@@ -58,6 +59,64 @@ class PostControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Nested
+    class LikeTest{
+        @Test
+        @DisplayName("좋아요 누르기 성공")
+        @WithMockUser
+        void create_like_success() throws Exception {
+            //given
+            TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+            Long postId = fixture.getPostId();
+            String message = fixture.getUserName() + "님이 좋아요를 눌렀습니다.";
+            LikeResponse likeResponse = new LikeResponse(message);
+
+            given(likeService.createLike(postId,fixture.getUserName())).willReturn(likeResponse);
+            //when-then
+            mockMvc.perform(post("/api/v1/posts/" + postId +"/likes")
+                            .with(csrf()))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.resultCode").exists())
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result").value(likeResponse.getMessage()));
+        }
+
+        @Test
+        @DisplayName("좋아요 누르기 실패 - 로그인 하지 않은 경우")
+        @WithAnonymousUser
+        void create_like_fail_no_login()throws Exception {
+            //given
+            TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+            Long postId = fixture.getPostId();
+
+            //when-then
+            mockMvc.perform(post("/api/v1/posts/" + postId +"/likes")
+                            .with(csrf()))
+                    .andDo(print())
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("좋아요 누르기 실패 - 해당 포스트가 없는 경우")
+        @WithMockUser
+        void create_like_fail_no_post() throws Exception {
+            //given
+            TestInfoFixture.TestInfo fixture = TestInfoFixture.get();
+            Long postId = fixture.getPostId();
+
+            given(likeService.createLike(postId,fixture.getUserName())).willThrow(new SNSException(ErrorCode.POST_NOT_FOUND));
+            //when-then
+            mockMvc.perform(post("/api/v1/posts/" + postId +"/likes")
+                            .with(csrf()))
+                    .andDo(print())
+                    .andExpect(status().is(ErrorCode.POST_NOT_FOUND.getHttpStatus().value()))
+                    .andExpect(jsonPath("$.resultCode").exists())
+                    .andExpect(jsonPath("$.result").exists())
+                    .andExpect(jsonPath("$.result.errorCode").value(ErrorCode.POST_NOT_FOUND.name()))
+                    .andExpect(jsonPath("$.result.message").value(ErrorCode.POST_NOT_FOUND.getMessage()));
+        }
+    }
     @Nested
     class MyFeedTest{
         @Test
